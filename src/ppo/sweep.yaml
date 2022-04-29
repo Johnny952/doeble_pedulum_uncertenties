@@ -7,8 +7,7 @@ metric:
   target: 1000
 parameters:
   gamma:
-    min: 0.95
-    max: 0.99
+    values: [0.95, 0.96, 0.97, 0.98, 0.99]
   state-stack:
     values: [2, 4, 6, 8, 10]
   buffer-capacity:
