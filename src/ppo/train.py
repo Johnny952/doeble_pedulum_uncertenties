@@ -97,7 +97,7 @@ if __name__ == "__main__":
     # Training Config
     train_config = parser.add_argument_group("Train config")
     train_config.add_argument(
-        "-E", "--episodes", type=int, default=10000, help="Number of training episode"
+        "-E", "--episodes", type=int, default=15000, help="Number of training episode"
     )
     train_config.add_argument(
         "-D",
