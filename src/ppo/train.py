@@ -1,7 +1,6 @@
 import os
 import argparse
 import torch
-
 import uuid
 import glob
 from termcolor import colored
@@ -73,6 +72,20 @@ if __name__ == "__main__":
     )
     agent_config.add_argument(
         "-SS", "--state-stack", type=int, default=4, help="Number of state stack as observation"
+    )
+    agent_config.add_argument(
+        "-AR",
+        "--architecture",
+        type=str,
+        default="256-128-64",
+        help='Base network architecture',
+    )
+    agent_config.add_argument(
+        "-MD",
+        "--mid-dim",
+        type=int,
+        default=32,
+        help='Number neurons in alpha, beta and value medium layer',
     )
     agent_config.add_argument(
         '-FC',
@@ -183,10 +196,11 @@ if __name__ == "__main__":
     print(colored(f"Using: {device}", "green"))
 
     logger = Logger("pendulum-ppo", args.model, run_name, str(run_id), args=vars(args))
+    config = logger.get_config()
 
     # Noise parser
-    if args.noise:
-        add_noise = [float(bound) for bound in args.noise.split(",")]
+    if config["noise"]:
+        add_noise = [float(bound) for bound in config["noise"].split(",")]
     else:
         add_noise = None
 
@@ -194,47 +208,49 @@ if __name__ == "__main__":
     print(colored("Initializing agent and environments", "blue"))
     
     env = Env(
-        state_stack=args.state_stack,
-        action_repeat=args.action_repeat,
-        seed=args.train_seed,
+        state_stack=config["state_stack"],
+        action_repeat=config["action_repeat"],
+        seed=config["train_seed"],
         noise=add_noise,
         done_reward_threshold=-1000
     )
     eval_env = Env(
-        state_stack=args.state_stack,
-        action_repeat=args.action_repeat,
-        seed=args.eval_seed,
-        path_render=train_render_model_path if args.eval_render else None,
-        evaluations=args.evaluations,
+        state_stack=config["state_stack"],
+        action_repeat=config["action_repeat"],
+        seed=config["eval_seed"],
+        path_render=train_render_model_path if config["eval_render"] else None,
+        evaluations=config["evaluations"],
         done_reward_threshold=-1000
     )
     Transition = namedtuple(
         "Transition", ("state", "action", "reward", "next_state", "a_logp")
     )
     buffer = ReplayMemory(
-        args.buffer_capacity,
-        args.batch_size,
+        config["buffer_capacity"],
+        config["batch_size"],
         Transition
     )
+    architecture = config.architecture.split("-")
     model = make_model(
-        args.state_stack,
+        config["state_stack"],
         input_dim=env.observation_dims,
         output_dim=env.action_dims,
-        architecture=[256, 128, 64]
+        architecture=config.architecture,#[256, 128, 64]
+        mid_dim=config.mid_dim,
     ).to(device)
     agent = make_agent(
         model,
-        args.gamma,
+        config["gamma"],
         buffer,
         logger,
         device=device,
-        batch_size=args.batch_size,
-        lr=args.learning_rate,
-        nb_nets=args.nb_nets
+        batch_size=config["batch_size"],
+        lr=config["learning_rate"],
+        nb_nets=config["nb_nets"]
     )
     init_epoch = 0
-    if args.from_checkpoint:
-        init_epoch = agent.load(args.from_checkpoint)
+    if config["from_checkpoint"]:
+        init_epoch = agent.load(config["from_checkpoint"])
     print(colored("Agent and environments created successfully", "green"))
 
     noise_print = "not using noise"
@@ -244,9 +260,10 @@ if __name__ == "__main__":
         else:
             noise_print = f"using noise with [{env.random_noise}] std"
 
+    episodes = config["episodes"]
     print(
         colored(
-            f"Training {type(agent)} during {args.episodes} epochs and {noise_print}",
+            f"Training {type(agent)} during {episodes} epochs and {noise_print}",
             "magenta",
         )
     )
@@ -256,13 +273,13 @@ if __name__ == "__main__":
         env,
         eval_env,
         logger,
-        args.episodes,
+        config["episodes"],
         init_ep=init_epoch,
-        nb_evaluations=args.evaluations,
-        eval_interval=args.eval_interval,
+        nb_evaluations=config["evaluations"],
+        eval_interval=config["eval_interval"],
         model_name=run_name,
         checkpoint_every=10,
-        debug=args.debug,
+        debug=config["debug"],
     )
 
     trainer.run()

@@ -6,6 +6,7 @@ def make_model(
         output_dim: int=1,
         architecture: "list[int]"=[256, 128, 64],
         model='base',
+        mid_dim: int=32,
     ):
     switcher = {
         'base': Model,
@@ -24,4 +25,5 @@ def make_model(
         input_dim=input_dim,
         output_dim=output_dim,
         architecture=architecture,
+        mid_dim=mid_dim,
     )
