@@ -74,7 +74,7 @@ if __name__ == "__main__":
         "-SS", "--state-stack", type=int, default=4, help="Number of state stack as observation"
     )
     agent_config.add_argument(
-        "-AR",
+        "-A",
         "--architecture",
         type=str,
         default="256-128-64",
@@ -230,12 +230,12 @@ if __name__ == "__main__":
         config["batch_size"],
         Transition
     )
-    architecture = config.architecture.split("-")
+    architecture = [int(l) for l in config.architecture.split("-")]
     model = make_model(
         config["state_stack"],
         input_dim=env.observation_dims,
         output_dim=env.action_dims,
-        architecture=config.architecture,#[256, 128, 64]
+        architecture=architecture,#[256, 128, 64]
         mid_dim=config.mid_dim,
     ).to(device)
     agent = make_agent(
