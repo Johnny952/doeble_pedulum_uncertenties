@@ -88,6 +88,13 @@ if __name__ == "__main__":
         help='Number neurons in alpha, beta and value medium layer',
     )
     agent_config.add_argument(
+        "-PE",
+        "--ppo-epoch",
+        type=int,
+        default=10,
+        help='Number of training updates each time buffer is full',
+    )
+    agent_config.add_argument(
         '-FC',
         '--from-checkpoint', 
         type=str, 
@@ -230,13 +237,13 @@ if __name__ == "__main__":
         config["batch_size"],
         Transition
     )
-    architecture = [int(l) for l in config.architecture.split("-")]
+    architecture = [int(l) for l in config["architecture"].split("-")]
     model = make_model(
         config["state_stack"],
         input_dim=env.observation_dims,
         output_dim=env.action_dims,
         architecture=architecture,#[256, 128, 64]
-        mid_dim=config.mid_dim,
+        mid_dim=config["mid_dim"],
     ).to(device)
     agent = make_agent(
         model,
@@ -246,7 +253,8 @@ if __name__ == "__main__":
         device=device,
         batch_size=config["batch_size"],
         lr=config["learning_rate"],
-        nb_nets=config["nb_nets"]
+        nb_nets=config["nb_nets"],
+        ppo_epoch=config["ppo_epoch"],
     )
     init_epoch = 0
     if config["from_checkpoint"]:
@@ -265,6 +273,11 @@ if __name__ == "__main__":
         colored(
             f"Training {type(agent)} during {episodes} epochs and {noise_print}",
             "magenta",
+        )
+    )
+    print(
+        colored(
+            "gamma: {}\tState stack: {}\tBuffer Capacity: {}\tBatch Size: {}".format(config["gamma"], config["state_stack"], config["buffer_capacity"], config["batch_size"]),
         )
     )
 
