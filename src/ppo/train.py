@@ -229,8 +229,6 @@ if __name__ == "__main__":
         evaluations=config["evaluations"],
         done_reward_threshold=-1000
     )
-    print(env.reward_threshold)
-    raise Exception
     Transition = namedtuple(
         "Transition", ("state", "action", "reward", "next_state", "a_logp")
     )
