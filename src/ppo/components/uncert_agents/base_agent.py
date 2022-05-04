@@ -7,7 +7,7 @@ import torch
 import numpy as np
 
 from shared.utils.replay_buffer import ReplayMemory
-from shared.utils.logger import Logger
+from shared.components.logger import Logger
 
 class BaseAgent:
     def __init__(

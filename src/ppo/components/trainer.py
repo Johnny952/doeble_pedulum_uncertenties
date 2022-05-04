@@ -5,7 +5,7 @@ from tqdm import tqdm
 from shared.utils.utils import save_uncert
 from components.uncert_agents.base_agent import BaseAgent
 from shared.components.env import Env
-from shared.utils.logger import Logger
+from shared.components.logger import Logger
 
 class Trainer:
     def __init__(

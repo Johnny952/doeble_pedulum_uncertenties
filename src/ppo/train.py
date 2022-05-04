@@ -12,7 +12,7 @@ sys.path.append('..')
 from shared.utils.utils import init_uncert_file
 from shared.components.env import Env
 from shared.utils.replay_buffer import ReplayMemory
-from shared.utils.logger import Logger
+from shared.components.logger import Logger
 from components.uncert_agents import make_agent
 from models import make_model
 from components.trainer import Trainer
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     # Training Config
     train_config = parser.add_argument_group("Train config")
     train_config.add_argument(
-        "-E", "--episodes", type=int, default=20000, help="Number of training episode"
+        "-E", "--episodes", type=int, default=30000, help="Number of training episode"
     )
     train_config.add_argument(
         "-D",
