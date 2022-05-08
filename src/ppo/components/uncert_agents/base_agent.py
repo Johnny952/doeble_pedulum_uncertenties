@@ -31,6 +31,7 @@ class BaseAgent:
         self._device = device
         self.gamma = gamma
         self.batch_size = batch_size
+        self.nb_nets = nb_nets
 
         self._buffer = buffer
         self._criterion = F.smooth_l1_loss

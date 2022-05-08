@@ -104,7 +104,7 @@ if __name__ == "__main__":
     # Training Config
     train_config = parser.add_argument_group("Train config")
     train_config.add_argument(
-        "-E", "--episodes", type=int, default=30000, help="Number of training episode"
+        "-E", "--episodes", type=int, default=50000, help="Number of training episode"
     )
     train_config.add_argument(
         "-D",
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     # Update
     update_config = parser.add_argument_group("Update config")
     update_config.add_argument(
-        "-BC", "--buffer-capacity", type=int, default=2000, help="Buffer Capacity"
+        "-BC", "--buffer-capacity", type=int, default=6000, help="Buffer Capacity"
     )
     update_config.add_argument(
         "-BS", "--batch-size", type=int, default=128, help="Batch Capacity"

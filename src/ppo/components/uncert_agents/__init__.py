@@ -1,4 +1,5 @@
 from .base_agent import BaseAgent
+from .sensitivity_agent import SensitivityAgent
 
 def make_agent(
         model,
@@ -20,7 +21,7 @@ def make_agent(
         # 'dropout2': DropoutTrainerModel2,
         # 'bootstrap': BootstrapTrainerModel,
         # 'bootstrap2': BootstrapTrainerModel2,
-        # 'sensitivity': SensitivityTrainerModel,
+        'sensitivity': SensitivityAgent,
         # 'bnn': BNNTrainerModel,
         # 'bnn2': BNNTrainerModel2,
         # 'aleatoric': AleatoricTrainerModel,

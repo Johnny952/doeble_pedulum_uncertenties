@@ -4,19 +4,19 @@ method: grid
 metric:
   name: "Episode Running Score"
   goal: maximize
-  target: 1000
+  target: 9100
 parameters:
   # gamma:
   #   values: [0.95, 0.96, 0.97, 0.98, 0.99]
   # state-stack:
   #   values: [2, 4, 6, 8, 10]
-  buffer-capacity:
-    values: [1000, 2000, 3000, 4000, 5000, 6000]
-  batch-size:
-    values: [64, 128, 256, 512]
+  # buffer-capacity:
+  #   values: [1000, 2000, 3000, 4000, 5000, 6000]
+  # batch-size:
+  #   values: [64, 128, 256, 512]
   architecture:
     values: ["256-128-64", "128-64-32", "512-512-512", "256-256-256", "128-128-128", "64-64-64"]
   # mid-dim:
   #   values: [8, 16, 32, 64, 128]
-  ppo-epoch:
-    values: [2, 5, 10, 15, 20]
+  # ppo-epoch:
+  #   values: [2, 5, 10, 15, 20]
