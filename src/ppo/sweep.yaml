@@ -2,9 +2,9 @@ program: train.py
 project: pendulum-ppo
 method: grid
 metric:
-  name: "Episode Running Score"
+  name: "Max Episode Running Score"
   goal: maximize
-  target: 9100
+  target: 10000
 parameters:
   gamma:
   #   values: [0.95, 0.96, 0.97, 0.98, 0.99]

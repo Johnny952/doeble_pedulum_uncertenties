@@ -35,8 +35,7 @@ class BNNAgent(BaseAgent):
         beta_list = []
         v_list = []
         for _ in range(self.nb_nets):
-            with torch.no_grad():
-                (alpha, beta), v = self._model(state)
+            (alpha, beta), v = self._model(state)
             alpha_list.append(alpha)
             beta_list.append(beta)
             v_list.append(v)
@@ -50,8 +49,7 @@ class BNNAgent(BaseAgent):
         beta_list = []
         v_list = []
         for _ in range(self.nb_nets):
-            with torch.no_grad():
-                (alpha, beta), v = self._model(state)
+            (alpha, beta), v = self._model(state)
             alpha_list.append(alpha)
             beta_list.append(beta)
             v_list.append(v)

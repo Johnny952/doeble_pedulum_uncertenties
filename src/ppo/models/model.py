@@ -6,7 +6,7 @@ class Model(nn.Module):
     Actor-Critic Network for PPO
     """
 
-    def __init__(self, state_stack, input_dim=11, output_dim=1, mid_dim=32, architecture=[256, 128, 64]):
+    def __init__(self, state_stack, input_dim=11, output_dim=1, mid_dim=32, architecture=[256, 128, 64], **kwargs):
         super(Model, self).__init__()
 
         self.base = Base(state_stack, input_dim, architecture=architecture)

@@ -2,13 +2,13 @@ import torch.nn as nn
 import torch
 from shared.models.base import Base
 
-class Model(nn.Module):
+class Aleatoric(nn.Module):
     """
     Actor-Critic Network for PPO
     """
 
-    def __init__(self, state_stack, input_dim=11, output_dim=1, mid_dim=32, architecture=[256, 128, 64]):
-        super(Model, self).__init__()
+    def __init__(self, state_stack, input_dim=11, output_dim=1, mid_dim=32, architecture=[256, 128, 64], **kwargs):
+        super(Aleatoric, self).__init__()
 
         self.base = Base(state_stack, input_dim, architecture=architecture)
 
