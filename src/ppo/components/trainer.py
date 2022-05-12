@@ -39,6 +39,7 @@ class Trainer:
 
         self._best_score = -100
         self._eval_nb = 0
+        self._max_running_score = 0
 
     def run(self):
         running_score = 0
@@ -65,7 +66,10 @@ class Trainer:
                 if done or die:
                     break
             running_score = running_score * 0.99 + metrics["Episode Score"] * 0.01
+            if running_score > self._max_running_score:
+                self._max_running_score = running_score
             metrics["Episode Running Score"] = running_score
+            metrics["Max Episode Running Score"] = self._max_running_score
             self._logger.log(metrics)
 
             # Eval agent
