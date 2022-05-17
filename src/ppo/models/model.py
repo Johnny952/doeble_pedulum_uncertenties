@@ -54,7 +54,7 @@ class Actor(nn.Module):
 
 class Critic(nn.Module):
     def __init__(self, state_stack, input_dim=11, architecture=[256, 128, 64]):
-        super(Actor, self).__init__()
+        super(Critic, self).__init__()
 
         self.base = Base(state_stack, input_dim, architecture=architecture)
 
