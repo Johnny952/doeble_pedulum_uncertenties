@@ -68,6 +68,7 @@ class Critic(nn.Module):
 
 class ActorCritic(nn.Module):
     def __init__(self, state_stack, input_dim=11, output_dim=1, mid_dim=32, architecture=[256, 128, 64], **kwargs):
+        super(ActorCritic, self).__init__()
         self.actor = Actor(state_stack, input_dim=input_dim, output_dim=output_dim, architecture=architecture)
         self.critic = Critic(state_stack, input_dim=input_dim, architecture=architecture)
 
