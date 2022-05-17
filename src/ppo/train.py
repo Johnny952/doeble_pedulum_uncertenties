@@ -100,6 +100,12 @@ if __name__ == "__main__":
         type=str, 
         default=None, 
         help='Path to trained model')
+    agent_config.add_argument(
+        '-CP',
+        '--clip-param', 
+        type=float, 
+        default=0.1, 
+        help='Clip Parameter')
 
     # Training Config
     train_config = parser.add_argument_group("Train config")
@@ -255,6 +261,7 @@ if __name__ == "__main__":
         lr=config["learning_rate"],
         nb_nets=config["nb_nets"],
         ppo_epoch=config["ppo_epoch"],
+        clip_param=config["clip_param"]
     )
     init_epoch = 0
     if config["from_checkpoint"]:

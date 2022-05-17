@@ -1,4 +1,4 @@
-from .model import Model
+from .model import Model, ActorCritic
 from .aleatoric import Aleatoric
 
 def make_bootstrap(
@@ -43,7 +43,7 @@ def make_model(
         nb_nets: int = 10,
     ):
     switcher = {
-        'base': Model,
+        'base': ActorCritic,
         # 'dropout': DropoutTrainerModel,
         # 'dropout2': DropoutTrainerModel2,
         'bootstrap': make_bootstrap,
@@ -54,7 +54,7 @@ def make_model(
         'aleatoric': Aleatoric,
         # 'vae': VAETrainerModel,
     }
-    return switcher.get(model, Model)(
+    return switcher.get(model, ActorCritic)(
         state_stack,
         input_dim=input_dim,
         output_dim=output_dim,
