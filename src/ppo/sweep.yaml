@@ -11,12 +11,11 @@ parameters:
     value: 0.99
   state-stack:
   #   values: [2, 4, 6, 8, 10]
-    # value: 4
-    value: 1
+    value: 4
+    # value: 1
   buffer-capacity:
     # values: [1000, 2000, 3000, 4000, 5000, 6000]
-    # value: 4000
-    value: 5000
+    value: 4000
   batch-size:
     # values: [64, 128, 256, 512]
     value: 128
