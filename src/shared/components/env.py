@@ -10,17 +10,17 @@ from shared.utils.noise import generate_noise_variance, add_noise
 
 class Env():
     """
-    Environment wrapper for CarRacing 
+    Environment wrapper for InvertedPendulum-v4 
     """
 
     def __init__(self, state_stack: int, action_repeat: int, seed: float=0, path_render: str=None, evaluations: int=1, noise=None, done_reward_threshold: float=-0.1, done_reward: float=0):
         self.render_path = path_render is not None
         if not self.render_path:
-            self.env = gym.make('InvertedDoublePendulum-v2')
+            self.env = gym.make('InvertedPendulum-v2')
         else:
             self.evaluations = evaluations
             self.idx_val = evaluations // 2
-            self.env = Monitor(gym.make('InvertedDoublePendulum-v2'), path_render,
+            self.env = Monitor(gym.make('InvertedPendulum-v2'), path_render,
                                video_callable=lambda episode_id: episode_id % evaluations == self.idx_val, force=True)
         self.env.seed(seed)
         self.reward_threshold = self.env.spec.reward_threshold
@@ -28,7 +28,8 @@ class Env():
         self.done_reward_threshold = done_reward_threshold
         self.done_reward = done_reward
         #self.env._max_episode_steps = your_value
-        self.observation_dims = 11
+        self.observation_dims = 4
+        self.observation_space = [-3, 3]
         self.action_dims = 1
 
         self.reward_memory = deque([], maxlen=100)

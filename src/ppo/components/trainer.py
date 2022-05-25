@@ -7,6 +7,10 @@ from components.uncert_agents.base_agent import BaseAgent
 from shared.components.env import Env
 from shared.components.logger import Logger
 
+def adjust_range(action, action_range=[0, 1], target_range=[-1, 1]):
+    normalized_action = (action - action_range[0]) / (action_range[1] - action_range[0])
+    return normalized_action * (target_range[1] - target_range[0]) + target_range[0]
+
 class Trainer:
     def __init__(
         self,
@@ -55,7 +59,7 @@ class Trainer:
 
             for _ in range(1000):
                 action, a_logp = self._agent.select_action(state)[:2]
-                state_, reward, done, die = self._env.step(action * 2 - 1)[:4]
+                state_, reward, done, die = self._env.step(adjust_range(action, target_range=self._env.observation_space))[:4]
                 if self._agent.store_transition(state, action, reward, state_, a_logp):
                     self._agent.update()
                     self._agent.empty_buffer()

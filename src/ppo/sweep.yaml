@@ -7,28 +7,26 @@ metric:
   target: 10000
 parameters:
   gamma:
-  #   values: [0.95, 0.96, 0.97, 0.98, 0.99]
-    value: 0.99
+    values: [0.95, 0.96, 0.97, 0.98, 0.99]
+    # value: 0.99
   state-stack:
-  #   values: [2, 4, 6, 8, 10]
-    value: 4
+    values: [2, 4, 6, 8, 10]
+    # value: 4
     # value: 1
   buffer-capacity:
-    # values: [1000, 2000, 3000, 4000, 5000, 6000]
-    value: 4000
+    values: [1000, 2000, 3000, 4000, 5000, 6000]
+    # value: 4000
   batch-size:
-    # values: [64, 128, 256, 512]
-    value: 128
+    values: [64, 128, 256, 512]
+    # value: 128
   architecture:
-    values: ["256-256", "256-256-256", "512-512-512", "1024-1024-1024", "512-512-512-512", "2048-2048-2048", "4096-4096-4096"]
+    values: ["128", "256", "512", "1024", "64-128", "256-256", "512-512"]
     # value: "512-512-512"
-  mid-dim:
-  #   values: [8, 16, 32, 64, 128]
-    value: 128
   ppo-epoch:
-    # values: [5, 10, 15, 20, 25, 30] 
-    value: 10
+    values: [5, 10, 15, 20, 25, 30] 
+    # value: 10
   learning-rate:
     value: 0.0003
   clip-param:
-    value: 0.2
+    # value: 0.2
+    values: [0.1, 0.15, 0.2]

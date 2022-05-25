@@ -46,8 +46,8 @@ if __name__ == "__main__":
         "-N",
         "--noise",
         type=str,
-        default="0,0.1",
-        # default=None,
+        # default="0,0.1",
+        default=None,
         help='Whether to use noise or not, and standard deviation bounds separated by comma (ex. "0,0.5")',
     )
 
@@ -79,13 +79,6 @@ if __name__ == "__main__":
         type=str,
         default="256-128-64",
         help='Base network architecture',
-    )
-    agent_config.add_argument(
-        "-MD",
-        "--mid-dim",
-        type=int,
-        default=32,
-        help='Number neurons in alpha, beta and value medium layer',
     )
     agent_config.add_argument(
         "-PE",
@@ -208,7 +201,7 @@ if __name__ == "__main__":
         device = args.device
     print(colored(f"Using: {device}", "green"))
 
-    logger = Logger("pendulum-ppo", args.model, run_name, str(run_id), args=vars(args))
+    logger = Logger("inv-pendulum-ppo", args.model, run_name, str(run_id), args=vars(args))
     config = logger.get_config()
 
     # Noise parser
@@ -249,7 +242,6 @@ if __name__ == "__main__":
         input_dim=env.observation_dims,
         output_dim=env.action_dims,
         architecture=architecture,#[256, 128, 64]
-        mid_dim=config["mid_dim"],
     ).to(device)
     agent = make_agent(
         model,
@@ -282,11 +274,9 @@ if __name__ == "__main__":
             "magenta",
         )
     )
-    print(
-        colored(
-            "gamma: {}\tState stack: {}\tBuffer Capacity: {}\tBatch Size: {}".format(config["gamma"], config["state_stack"], config["buffer_capacity"], config["batch_size"]),
-        )
-    )
+
+    for name, param in config.items():
+        print(colored(f"{name}: {param}", "cyan"))
 
     trainer = Trainer(
         agent,
