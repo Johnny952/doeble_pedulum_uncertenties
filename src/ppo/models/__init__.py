@@ -1,5 +1,7 @@
-from .model import Model, ActorCritic
-from .aleatoric import Aleatoric
+from .model import ActorCritic
+from .aleatoric import AleatoricActorCritic
+from .dropout import DropoutActorCritic
+from .bnn import BNNActorCritic
 
 def make_bootstrap(
         state_stack: int,
@@ -8,7 +10,7 @@ def make_bootstrap(
         architecture: "list[int]"=[256, 128, 64],
         nb_nets: int = 10,
     ):
-    return [Aleatoric(
+    return [AleatoricActorCritic(
         state_stack,
         input_dim=input_dim,
         output_dim=output_dim,
@@ -22,7 +24,7 @@ def make_bootstrap2(
         architecture: "list[int]"=[256, 128, 64],
         nb_nets: int = 10,
     ):
-    return [Model(
+    return [ActorCritic(
         state_stack,
         input_dim=input_dim,
         output_dim=output_dim,
@@ -39,14 +41,13 @@ def make_model(
     ):
     switcher = {
         'base': ActorCritic,
-        # 'dropout': DropoutTrainerModel,
-        # 'dropout2': DropoutTrainerModel2,
+        'dropout': DropoutActorCritic,
+        'dropout2': DropoutActorCritic,
         'bootstrap': make_bootstrap,
         'bootstrap2': make_bootstrap2,
-        'sensitivity': Model,
-        # 'bnn': BNNTrainerModel,
-        # 'bnn2': BNNTrainerModel2,
-        'aleatoric': Aleatoric,
+        'sensitivity': ActorCritic,
+        'bnn': BNNActorCritic,
+        'aleatoric': AleatoricActorCritic,
         # 'vae': VAETrainerModel,
     }
     return switcher.get(model, ActorCritic)(
