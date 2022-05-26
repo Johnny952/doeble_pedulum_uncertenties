@@ -1,5 +1,5 @@
 program: train.py
-project: pendulum-ppo
+project: inv-pendulum-ppo
 method: grid
 metric:
   name: "Max Episode Running Score"
