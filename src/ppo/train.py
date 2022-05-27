@@ -238,16 +238,16 @@ if __name__ == "__main__":
     )
     architecture = [int(l) for l in config["architecture"].split("-")]
     model = make_model(
-        config["state_stack"],
+        state_stack=config["state_stack"],
         input_dim=env.observation_dims,
         output_dim=env.action_dims,
         architecture=architecture,#[256, 128, 64]
     ).to(device)
     agent = make_agent(
-        model,
-        config["gamma"],
-        buffer,
-        logger,
+        model=model,
+        gamma=config["gamma"],
+        buffer=buffer,
+        logger=logger,
         device=device,
         batch_size=config["batch_size"],
         lr=config["learning_rate"],
