@@ -2,42 +2,28 @@ from .model import ActorCritic
 from .aleatoric import AleatoricActorCritic
 from .dropout import DropoutActorCritic
 from .bnn import BNNActorCritic
+from shared.models.vae import VAE
 
-def make_bootstrap(
-        state_stack: int,
-        input_dim: int=11,
-        output_dim: int=1,
-        architecture: "list[int]"=[256, 128, 64],
-        nb_nets: int = 10,
-    ):
-    return [AleatoricActorCritic(
-        state_stack,
-        input_dim=input_dim,
-        output_dim=output_dim,
-        architecture=architecture,
-    ) for _ in range(nb_nets)]
+def make_vae(**kwargs):
+    return {
+        'vae': VAE(
+            encoder_arc=[256, 128, 64],
+            decoder_arc=[64, 128, 256],
+            latent_dim=32,
+            **kwargs
+        ),
+        'model': ActorCritic(**kwargs),
+    }
 
-def make_bootstrap2(
-        state_stack: int,
-        input_dim: int=11,
-        output_dim: int=1,
-        architecture: "list[int]"=[256, 128, 64],
-        nb_nets: int = 10,
-    ):
-    return [ActorCritic(
-        state_stack,
-        input_dim=input_dim,
-        output_dim=output_dim,
-        architecture=architecture,
-    ) for _ in range(nb_nets)]
+def make_bootstrap(nb_nets: int = 10, **kwargs):
+    return [AleatoricActorCritic(**kwargs) for _ in range(nb_nets)]
+
+def make_bootstrap2(nb_nets: int = 10, **kwargs):
+    return [ActorCritic(**kwargs) for _ in range(nb_nets)]
 
 def make_model(
-        state_stack: int,
-        input_dim: int = 11,
-        output_dim: int = 1,
-        architecture: "list[int]" = [256, 128, 64],
         model = 'base',
-        nb_nets: int = 10,
+        **kwargs,
     ):
     switcher = {
         'base': ActorCritic,
@@ -50,10 +36,4 @@ def make_model(
         'aleatoric': AleatoricActorCritic,
         # 'vae': VAETrainerModel,
     }
-    return switcher.get(model, ActorCritic)(
-        state_stack,
-        input_dim=input_dim,
-        output_dim=output_dim,
-        architecture=architecture,
-        nb_nets=nb_nets,
-    )
+    return switcher.get(model, ActorCritic)(**kwargs)

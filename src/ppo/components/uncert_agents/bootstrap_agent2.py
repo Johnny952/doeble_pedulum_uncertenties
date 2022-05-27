@@ -2,60 +2,43 @@ import torch
 import torch.optim as optim
 
 from .base_agent import BaseAgent
-from shared.utils.losses import ll_gaussian
-from shared.utils.mixtureDist import GaussianMixture
 
-class BootstrapAgent(BaseAgent):
-    def __init__(self, lr=0.001, nb_nets=None, **kwargs):
+class BootstrapAgent2(BaseAgent):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        self._criterion = ll_gaussian
-        self._value_scale = 1 / nb_nets
-        self._optimizer = [optim.Adam(net.parameters(), lr=lr) for net in self._model]
+        self._optimizer = [optim.Adam(net.parameters(), lr=self.lr) for net in self._model]
 
     def chose_action(self, state: torch.Tensor):
         alpha_list = []
         beta_list = []
-        log_sigma_list = []
         v_list = []
         for net in self._model:
-            (alpha, beta), (_, v, sigma) = net(state)
-            log_sigma_list.append(sigma)
+            (alpha, beta), v = net(state)
             alpha_list.append(alpha)
             beta_list.append(beta)
             v_list.append(v)
-        sigma_list = torch.exp(torch.stack(log_sigma_list))
         alpha_list = torch.stack(alpha_list)
         beta_list = torch.stack(beta_list)
         v_list = torch.stack(v_list)
-        distribution = GaussianMixture(v_list.squeeze(
-            dim=-1), sigma_list.squeeze(dim=-1), device=self.device)
-        v = distribution.mean.unsqueeze(dim=-1)
-        return (torch.mean(alpha_list, dim=0), torch.mean(beta_list, dim=0)), v
+        return (torch.mean(alpha_list, dim=0), torch.mean(beta_list, dim=0)), torch.mean(v_list, dim=0)
 
     def get_uncert(self, state: torch.Tensor):
         alpha_list = []
         beta_list = []
-        log_sigma_list = []
         v_list = []
         for net in self._model:
-            (alpha, beta), (_, v, sigma) = net(state)
-            log_sigma_list.append(sigma)
+            (alpha, beta), v = net(state)
             alpha_list.append(alpha)
             beta_list.append(beta)
             v_list.append(v)
-        sigma_list = torch.exp(torch.stack(log_sigma_list))
+
         alpha_list = torch.stack(alpha_list)
         beta_list = torch.stack(beta_list)
         v_list = torch.stack(v_list)
 
-        distribution = GaussianMixture(v_list.squeeze(
-            dim=1), sigma_list.squeeze(dim=1), device=self.device)
-        epistemic = distribution.std
+        epistemic = torch.std(v_list)
         aleatoric = torch.tensor([0])
-        v = distribution.mean
-        # v = torch.mean(v_list, dim=0)
-        return (torch.mean(alpha_list, dim=0), torch.mean(beta_list, dim=0)), v, (epistemic, aleatoric)
+        return (torch.mean(alpha_list, dim=0), torch.mean(beta_list, dim=0)), torch.mean(v_list, dim=0), (epistemic, aleatoric)
 
     def update(self):
         self.training_step += 1
@@ -82,9 +65,7 @@ class BootstrapAgent(BaseAgent):
             self._nb_update += 1
     
     def get_value_loss(self, prediction, target_v):
-        v = prediction[1]
-        sigma = prediction[-1]
-        return self._criterion(v, target_v, sigma) * self._value_scale
+        return self._criterion(prediction[1], target_v)
 
     def save(self, epoch, path="param/ppo_net_params.pkl"):
         tosave = {'epoch': epoch}

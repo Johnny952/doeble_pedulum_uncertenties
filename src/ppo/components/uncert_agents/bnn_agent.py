@@ -1,30 +1,13 @@
-import torch.optim as optim
 import torch
-import torch.nn as nn
 import torchbnn as bnn
 
 from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 from torch.distributions import Beta
 from .base_agent import BaseAgent
-from shared.utils.replay_buffer import ReplayMemory
-from shared.components.logger import Logger
 
 class BNNAgent(BaseAgent):
-    def __init__(
-        self,
-        model: nn.Module,
-        gamma,
-        buffer: ReplayMemory,
-        logger: Logger,
-        device="cpu",
-        max_grad_norm=0.5,
-        clip_param=0.1,
-        ppo_epoch=10,
-        batch_size=128,
-        lr=0.001,
-        nb_nets=None
-    ):
-        super().__init__(model, gamma, buffer, logger, device, max_grad_norm, clip_param, ppo_epoch, batch_size, lr, nb_nets)
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
 
         self._kl_loss = bnn.BKLLoss(reduction='mean', last_layer_only=False)
         self.sample_nbr = 50

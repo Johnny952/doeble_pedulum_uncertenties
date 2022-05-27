@@ -23,6 +23,7 @@ class BaseAgent:
         batch_size=128,
         lr=1e-3,
         nb_nets=None,
+        **kwargs,
     ):
         self._logger = logger
         self.max_grad_norm = max_grad_norm
@@ -36,6 +37,7 @@ class BaseAgent:
         self._buffer = buffer
         self._criterion = F.smooth_l1_loss
         self._model = model
+        self.lr = lr
         self._optimizer = optim.Adam(self._model.parameters(), lr=lr)
         self._nb_update = 0
         self.training_step = 0
