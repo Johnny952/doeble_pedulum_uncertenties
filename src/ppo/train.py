@@ -71,20 +71,20 @@ if __name__ == "__main__":
         "-G", "--gamma", type=float, default=0.99, help="discount factor"
     )
     agent_config.add_argument(
-        "-SS", "--state-stack", type=int, default=4, help="Number of state stack as observation"
+        "-SS", "--state-stack", type=int, default=6, help="Number of state stack as observation"
     )
     agent_config.add_argument(
         "-A",
         "--architecture",
         type=str,
-        default="256-128-64",
+        default="1024",
         help='Base network architecture',
     )
     agent_config.add_argument(
         "-PE",
         "--ppo-epoch",
         type=int,
-        default=10,
+        default=20,
         help='Number of training updates each time buffer is full',
     )
     agent_config.add_argument(
@@ -142,13 +142,13 @@ if __name__ == "__main__":
     # Update
     update_config = parser.add_argument_group("Update config")
     update_config.add_argument(
-        "-BC", "--buffer-capacity", type=int, default=6000, help="Buffer Capacity"
+        "-BC", "--buffer-capacity", type=int, default=1000, help="Buffer Capacity"
     )
     update_config.add_argument(
         "-BS", "--batch-size", type=int, default=128, help="Batch Capacity"
     )
     update_config.add_argument(
-        "-LR", "--learning-rate", type=float, default=1e-3, help="Learning Rate"
+        "-LR", "--learning-rate", type=float, default=0.001, help="Learning Rate"
     )
 
     args = parser.parse_args()
@@ -241,7 +241,7 @@ if __name__ == "__main__":
         state_stack=config["state_stack"],
         input_dim=env.observation_dims,
         output_dim=env.action_dims,
-        architecture=architecture,#[256, 128, 64]
+        architecture=architecture,
     ).to(device)
     agent = make_agent(
         model=model,
