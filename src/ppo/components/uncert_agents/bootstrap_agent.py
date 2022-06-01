@@ -9,6 +9,7 @@ class BootstrapAgent(BaseAgent):
     def __init__(self, lr=0.001, nb_nets=None, **kwargs):
         super().__init__(**kwargs)
 
+        self._model = self._model.model
         self._criterion = ll_gaussian
         self._value_scale = 1 / nb_nets
         self._optimizer = [optim.Adam(net.parameters(), lr=lr) for net in self._model]

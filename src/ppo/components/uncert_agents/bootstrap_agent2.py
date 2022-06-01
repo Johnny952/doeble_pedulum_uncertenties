@@ -6,6 +6,7 @@ from .base_agent import BaseAgent
 class BootstrapAgent2(BaseAgent):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._model = self._model.model
         self._optimizer = [optim.Adam(net.parameters(), lr=self.lr) for net in self._model]
 
     def chose_action(self, state: torch.Tensor):

@@ -4,22 +4,35 @@ from .dropout import DropoutActorCritic
 from .bnn import BNNActorCritic
 from shared.models.vae import VAE
 
-def make_vae(**kwargs):
-    return {
-        'vae': VAE(
+class VAEActorCritic:
+    def __init__(self, **kwargs) -> None:
+        self.vae = VAE(
             encoder_arc=[256, 128, 64],
             decoder_arc=[64, 128, 256],
             latent_dim=32,
             **kwargs
-        ),
-        'model': ActorCritic(**kwargs),
-    }
+        )
+        self.model = ActorCritic(**kwargs)
 
-def make_bootstrap(nb_nets: int = 10, **kwargs):
-    return [AleatoricActorCritic(**kwargs) for _ in range(nb_nets)]
+    def to(self, device):
+        self.vae.to(device)
+        self.model.to(device)
 
-def make_bootstrap2(nb_nets: int = 10, **kwargs):
-    return [ActorCritic(**kwargs) for _ in range(nb_nets)]
+class BootstrapActorCritic:
+    def __init__(self, nb_nets: int = 10, **kwargs) -> None:
+        self.model = [AleatoricActorCritic(**kwargs) for _ in range(nb_nets)]
+    
+    def to(self, device):
+        for model in self.model:
+            model.to(device)
+
+class Bootstrap2ActorCritic:
+    def __init__(self, nb_nets: int = 10, **kwargs) -> None:
+        self.model = [ActorCritic(**kwargs) for _ in range(nb_nets)]
+    
+    def to(self, device):
+        for model in self.model:
+            model.to(device)
 
 def make_model(
         model = 'base',
@@ -29,11 +42,11 @@ def make_model(
         'base': ActorCritic,
         'dropout': DropoutActorCritic,
         'dropout2': DropoutActorCritic,
-        'bootstrap': make_bootstrap,
-        'bootstrap2': make_bootstrap2,
+        'bootstrap': BootstrapActorCritic,
+        'bootstrap2': Bootstrap2ActorCritic,
         'sensitivity': ActorCritic,
         'bnn': BNNActorCritic,
         'aleatoric': AleatoricActorCritic,
-        # 'vae': VAETrainerModel,
+        'vae': VAEActorCritic,
     }
     return switcher.get(model, ActorCritic)(**kwargs)

@@ -6,7 +6,7 @@ from torch.distributions import Beta
 from .base_agent import BaseAgent
 
 class BNNAgent(BaseAgent):
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self._kl_loss = bnn.BKLLoss(reduction='mean', last_layer_only=False)

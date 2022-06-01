@@ -38,7 +38,8 @@ class BaseAgent:
         self._criterion = F.smooth_l1_loss
         self._model = model
         self.lr = lr
-        self._optimizer = optim.Adam(self._model.parameters(), lr=lr)
+        if self._model is not list or self._model is not dict:
+            self._optimizer = optim.Adam(self._model.parameters(), lr=lr)
         self._nb_update = 0
         self.training_step = 0
 
