@@ -60,7 +60,7 @@ class VAEAgent(BaseAgent):
             'VAE Step': self._nb_vae_update,
         }
         for index in sampler:
-            [decoding, input, mu, log_var] = self._vae(s[index])
+            [decoding, input, mu, log_var] = self._model.vae(s[index])
             l = self._model.vae.loss_function(decoding, input, mu, log_var, M_N=self._kld_scale)
             loss = l['loss']
             recons_loss = l['Reconstruction_Loss']

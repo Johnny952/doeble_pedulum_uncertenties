@@ -571,3 +571,63 @@ def plot_uncert_comparative(train_paths, test_paths, names, linewidths=None, smo
 
 
         fig.savefig(f"{imgs_path}{file_name}")
+
+def plot_comparative(train_paths, test0_paths, test_paths, names, linewidths=None, imgs_path='images/'):
+    assert len(train_paths) == len(names)
+    assert len(test_paths) == len(names)
+    assert len(test0_paths) == len(names)
+
+    for idx, (train_path, test0_path, test_path, name) in enumerate(zip(train_paths, test0_paths, test_paths, names)):
+        linewidth = linewidths[idx] if linewidths is not None else None
+        file_name = f"comparative_{name}"
+
+        fig, ax = plt.subplots(nrows=1, ncols=3, sharey=True)
+        fig.set_figheight(7)
+        fig.set_figwidth(20)
+        fig.suptitle(f"Uncertainties comparative during train and test model: {name}", fontsize=18)
+        
+        ax[0].set_ylabel("Epistemic", fontsize=16)
+        ax[0].set_xlabel("Episode", fontsize=16)
+        ax[0].set_title("Epistemic Uncertainty in evaluation", fontsize=16)
+        ax[1].set_xlabel("Test Number", fontsize=16)
+        ax[1].set_title("Epistemic Uncertainty in test without noise", fontsize=16)
+        ax[2].set_xlabel("Noise Variance", fontsize=16)
+        ax[2].set_title("Epistemic Uncertainty in test with noise", fontsize=16)
+
+        (
+            _,
+            (unique_ep, _, mean_epist, _),
+            (_, std_epist, std_aleat),
+            _,
+        ) = read_uncert(train_path)[0]
+        mean_epist = np.nan_to_num(mean_epist, nan=_NAN_)
+        ax[0].plot(
+            unique_ep, mean_epist, linewidth=linewidth
+        )
+
+
+        (
+            epochs,
+            (unique_ep, mean_reward, mean_epist, mean_aleat),
+            (std_reward, std_epist, std_aleat),
+            (epist, aleat),
+        ) = read_uncert(test0_path)[0]
+        epist = [np.mean(e) for e in epist]
+        ax[1].plot(
+            epist, linewidth=linewidth
+        )
+
+        (
+            (
+                _,
+                (_, _, mean_epist, mean_aleat),
+                (_, std_epist, std_aleat),
+                _,
+            ),
+            sigma,
+        ) = read_uncert(test_path)
+        ax[2].plot(
+            sigma, mean_epist, linewidth=linewidth
+        )
+
+        fig.savefig(f"{imgs_path}{file_name}")
