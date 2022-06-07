@@ -154,7 +154,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     run_id = uuid.uuid4()
-    run_name = f"{args.model}_{run_id}"
+    # run_name = f"{args.model}_{run_id}"
+    run_name = args.model
     render_path = "render"
     render_model_path = f"{render_path}/train"
     train_render_model_path = f"{render_model_path}/{run_name}"
@@ -201,6 +202,7 @@ if __name__ == "__main__":
         device = args.device
     print(colored(f"Using: {device}", "green"))
 
+    # Init logger
     logger = Logger("inv-pendulum-ppo", args.model, run_name, str(run_id), args=vars(args))
     config = logger.get_config()
 
@@ -212,7 +214,6 @@ if __name__ == "__main__":
 
     # Init Agent and Environment
     print(colored("Initializing agent and environments", "blue"))
-    
     env = Env(
         state_stack=config["state_stack"],
         action_repeat=config["action_repeat"],
@@ -238,6 +239,7 @@ if __name__ == "__main__":
     )
     architecture = [int(l) for l in config["architecture"].split("-")]
     model = make_model(
+        model=config["model"],
         state_stack=config["state_stack"],
         input_dim=env.observation_dims,
         output_dim=env.action_dims,

@@ -6,6 +6,7 @@ from .dropout_agent2 import DropoutAgent2
 from .bootstrap_agent import BootstrapAgent
 from .bootstrap_agent2 import BootstrapAgent2
 from .bnn_agent import BNNAgent
+from .vae_agent import VAEAgent
 
 def make_agent(agent='base', **kwargs):
     switcher = {
@@ -17,6 +18,6 @@ def make_agent(agent='base', **kwargs):
         'sensitivity': SensitivityAgent,
         'bnn': BNNAgent,
         'aleatoric': AleatoricAgent,
-        # 'vae': VAETrainerModel,
+        'vae': VAEAgent,
     }
     return switcher.get(agent, BaseAgent)(**kwargs)

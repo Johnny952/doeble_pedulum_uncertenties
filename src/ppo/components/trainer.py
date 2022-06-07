@@ -3,6 +3,7 @@ import wandb
 from tqdm import tqdm
 
 from shared.utils.utils import save_uncert
+from shared.components.evaluator import Evaluator
 from components.uncert_agents.base_agent import BaseAgent
 from shared.components.env import Env
 from shared.components.logger import Logger
@@ -25,6 +26,7 @@ class Trainer:
         model_name="base",
         checkpoint_every=10,
         debug=False,
+        evaluator: Evaluator = None,
     ) -> None:
         self._logger = logger
         self._agent = agent
@@ -37,6 +39,7 @@ class Trainer:
         self._model_name = model_name
         self._checkpoint_every = checkpoint_every
         self._debug = debug
+        self._evaluator = evaluator
 
         self.best_model_path = f"param/best_{model_name}.pkl"
         self.checkpoint_model_path = f"param/checkpoint_{self._model_name}.pkl"
@@ -98,7 +101,9 @@ class Trainer:
                 break
 
     def eval(self, episode_nb, mode='train'):
-        assert mode in ['train', 'test']
+        assert mode in ['train', 'eval', 'test0', 'test']
+        if self._evaluator:
+            self._evaluator.eval(episode_nb, self._agent)
         # self._agent.eval_mode()
         wandb_mode = 'Eval' if mode == 'train' else 'Test'
         metrics = {
@@ -123,7 +128,7 @@ class Trainer:
                 uncert.append(
                     [epis.view(-1).cpu().numpy()[0], aleat.view(-1).cpu().numpy()[0]]
                 )
-                state_, reward, _, die = self._eval_env.step(action * 2 - 1)[:4]
+                state_, reward, _, die = self._eval_env.step(adjust_range(action, target_range=self._env.observation_space))[:4]
                 score += reward
                 state = state_
                 steps += 1

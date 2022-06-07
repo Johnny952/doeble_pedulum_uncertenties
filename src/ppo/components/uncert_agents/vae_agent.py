@@ -61,7 +61,7 @@ class VAEAgent(BaseAgent):
         }
         for index in sampler:
             [decoding, input, mu, log_var] = self._vae(s[index])
-            l = self._vae.loss_function(decoding, input, mu, log_var, M_N=self._kld_scale)
+            l = self._model.vae.loss_function(decoding, input, mu, log_var, M_N=self._kld_scale)
             loss = l['loss']
             recons_loss = l['Reconstruction_Loss']
             kld_loss = l['kld_loss']
@@ -82,6 +82,9 @@ class VAEAgent(BaseAgent):
             target_v = r + self.gamma * self.chose_action(s_)[1].squeeze(dim=-1)
             adv = target_v - self.chose_action(s)[1].squeeze(dim=-1)
 
+        self._model.model.train()
+        self._model.vae.eval()
+
         for _ in range(self.ppo_epoch):
             sampler = SubsetRandomSampler(range(self._buffer._capacity))
             losses = self.train_once(
@@ -97,6 +100,9 @@ class VAEAgent(BaseAgent):
 
             self._logger.log(losses)
             self._nb_update += 1
+
+        self._model.model.eval()
+        self._model.vae.train()
 
         for _ in range(self._nb_vae_epochs):
             sampler = SubsetRandomSampler(range(self.buffer_capacity))
