@@ -13,6 +13,7 @@ class BootstrapAgent(BaseAgent):
         self._criterion = ll_gaussian
         self._value_scale = 1 / nb_nets
         self._optimizer = [optim.Adam(net.parameters(), lr=lr) for net in self._model]
+        self._logger.watch(self._model[0])
 
     def chose_action(self, state: torch.Tensor):
         alpha_list = []

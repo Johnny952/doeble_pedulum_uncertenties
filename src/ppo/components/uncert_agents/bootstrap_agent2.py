@@ -8,6 +8,7 @@ class BootstrapAgent2(BaseAgent):
         super().__init__(**kwargs)
         self._model = self._model.model
         self._optimizer = [optim.Adam(net.parameters(), lr=self.lr) for net in self._model]
+        self._logger.watch(self._model[0])
 
     def chose_action(self, state: torch.Tensor):
         alpha_list = []

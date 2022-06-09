@@ -40,11 +40,10 @@ class BaseAgent:
         self.lr = lr
         if self._model is not list or self._model is not dict:
             self._optimizer = optim.Adam(self._model.parameters(), lr=lr)
+            logger.watch(model)
         self._nb_update = 0
         self.training_step = 0
 
-        logger.watch(model)
-    
     def select_action(self, state: np.ndarray, eval=False):
         state = torch.from_numpy(state).float().to(self._device).unsqueeze(0)
 

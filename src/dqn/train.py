@@ -6,21 +6,35 @@ import glob
 from termcolor import colored
 from pyvirtualdisplay import Display
 from collections import namedtuple
+import numpy as np
 
 import sys
+
 sys.path.append('..')
 from shared.utils.utils import init_uncert_file
 from shared.components.env import Env
 from shared.utils.replay_buffer import ReplayMemory
 from shared.components.logger import Logger
 from components.uncert_agents import make_agent
-from models import make_model
+from components.eps_scheduler import Epsilon
 from components.trainer import Trainer
+from models import make_model
+
+ACTION_RANGE = [-3, 3]
+def get_actions(nb_actions, type_actions):
+    if type_actions == 'linear':
+        return np.linspace(ACTION_RANGE[0], ACTION_RANGE[1], num=nb_actions)
+    else:
+        negative_num = nb_actions//2
+        positive_num = nb_actions - negative_num
+        positive_space = np.logspace(0, 1, num=positive_num, dtype=float, base=ACTION_RANGE[1] + 1) - 1
+        negative_space = -np.logspace(0, 1, num=negative_num + 1, dtype=float, base=-ACTION_RANGE[0] + 1)[1:] + 1
+        return np.sort(np.concatenate((positive_space, negative_space)))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Train a PPO agent for Inverted Double Pendulum",
+        description="Train a DDQN agent for Inverted Double Pendulum",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     # Environment Config
@@ -74,6 +88,12 @@ if __name__ == "__main__":
         "-SS", "--state-stack", type=int, default=6, help="Number of state stack as observation"
     )
     agent_config.add_argument(
+        "-AC", "--actions", type=int, default=30, help="Number Actions"
+    )
+    agent_config.add_argument(
+        "-TA", "--type-actions", type=str, default="log", help="How to split action space, can be 'linear' or 'log'"
+    )
+    agent_config.add_argument(
         "-A",
         "--architecture",
         type=str,
@@ -81,24 +101,49 @@ if __name__ == "__main__":
         help='Base network architecture',
     )
     agent_config.add_argument(
-        "-PE",
-        "--ppo-epoch",
-        type=int,
-        default=20,
-        help='Number of training updates each time buffer is full',
-    )
-    agent_config.add_argument(
         '-FC',
         '--from-checkpoint', 
         type=str, 
         default=None, 
         help='Path to trained model')
-    agent_config.add_argument(
-        '-CP',
-        '--clip-param', 
-        type=float, 
-        default=0.1, 
-        help='Clip Parameter')
+
+    # Epsilon Config
+    epsilon_config = parser.add_argument_group("Epsilon config")
+    epsilon_config.add_argument(
+        "-EM",
+        "--epsilon-method",
+        type=str,
+        default="linear",
+        help="Epsilon decay method: constant, linear, exp or inverse_sigmoid",
+    )
+    epsilon_config.add_argument(
+        "-EMa",
+        "--epsilon-max",
+        type=float,
+        default=1,
+        help="The minimum value of epsilon, used this value in constant",
+    )
+    epsilon_config.add_argument(
+        "-EMi",
+        "--epsilon-min",
+        type=float,
+        default=0.05,
+        help="The minimum value of epsilon",
+    )
+    epsilon_config.add_argument(
+        "-EF",
+        "--epsilon-factor",
+        type=float,
+        default=7,
+        help="Factor parameter of epsilon decay, only used when method is exp or inverse_sigmoid",
+    )
+    epsilon_config.add_argument(
+        "-EMS",
+        "--epsilon-max-steps",
+        type=int,
+        default=25000,
+        help="Max Epsilon Steps parameter, when epsilon is close to the minimum",
+    )
 
     # Training Config
     train_config = parser.add_argument_group("Train config")
@@ -116,7 +161,7 @@ if __name__ == "__main__":
         "-EI",
         "--eval-interval",
         type=int,
-        default=20,
+        default=200,
         help="Interval between evaluations",
     )
     train_config.add_argument(
@@ -142,10 +187,10 @@ if __name__ == "__main__":
     # Update
     update_config = parser.add_argument_group("Update config")
     update_config.add_argument(
-        "-BC", "--buffer-capacity", type=int, default=1000, help="Buffer Capacity"
+        "-BC", "--buffer-capacity", type=int, default=1000000, help="Buffer Capacity"
     )
     update_config.add_argument(
-        "-BS", "--batch-size", type=int, default=128, help="Batch Capacity"
+        "-BS", "--batch-size", type=int, default=64, help="Batch Capacity"
     )
     update_config.add_argument(
         "-LR", "--learning-rate", type=float, default=0.001, help="Learning Rate"
@@ -154,8 +199,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     run_id = uuid.uuid4()
-    # run_name = f"{args.model}_{run_id}"
-    run_name = args.model
+    run_name = f"{args.model}_{run_id}"
+    # run_name = args.model
     render_path = "render"
     render_model_path = f"{render_path}/train"
     train_render_model_path = f"{render_model_path}/{run_name}"
@@ -203,8 +248,11 @@ if __name__ == "__main__":
     print(colored(f"Using: {device}", "green"))
 
     # Init logger
-    logger = Logger("inv-pendulum-ppo", args.model, run_name, str(run_id), args=vars(args))
+    logger = Logger("inv-pendulum-dqn", args.model, run_name, str(run_id), args=vars(args))
     config = logger.get_config()
+
+    # Actions
+    actions = get_actions(config["actions"], config["type_actions"])
 
     # Noise parser
     if config["noise"]:
@@ -230,32 +278,46 @@ if __name__ == "__main__":
         done_reward_threshold=-1000
     )
     Transition = namedtuple(
-        "Transition", ("state", "action", "reward", "next_state", "a_logp")
+        "Transition", ("state", "action", "next_state", "reward", "done")
     )
     buffer = ReplayMemory(
         config["buffer_capacity"],
         config["batch_size"],
         Transition
     )
+    epsilon = Epsilon(
+        max_steps=config["epsilon_max_steps"],
+        method=config["epsilon_method"],
+        epsilon_max=config["epsilon_max"],
+        epsilon_min=config["epsilon_min"],
+        factor=config["epsilon_factor"],
+    )
     architecture = [int(l) for l in config["architecture"].split("-")]
-    model = make_model(
+    model1 = make_model(
         model=config["model"],
         state_stack=config["state_stack"],
         input_dim=env.observation_dims,
-        output_dim=env.action_dims,
+        output_dim=len(actions),
+        architecture=architecture,
+    ).to(device)
+    model2 = make_model(
+        model=config["model"],
+        state_stack=config["state_stack"],
+        input_dim=env.observation_dims,
+        output_dim=len(actions),
         architecture=architecture,
     ).to(device)
     agent = make_agent(
-        model=model,
+        model1=model1,
+        model2=model2,
         gamma=config["gamma"],
         buffer=buffer,
         logger=logger,
+        actions=actions,
+        epsilon=epsilon,
         device=device,
-        batch_size=config["batch_size"],
         lr=config["learning_rate"],
         nb_nets=config["nb_nets"],
-        ppo_epoch=config["ppo_epoch"],
-        clip_param=config["clip_param"]
     )
     init_epoch = 0
     if config["from_checkpoint"]:
@@ -281,11 +343,11 @@ if __name__ == "__main__":
         print(colored(f"{name}: {param}", "cyan"))
 
     trainer = Trainer(
-        agent,
-        env,
-        eval_env,
-        logger,
-        config["episodes"],
+        agent=agent,
+        env=env,
+        eval_env=eval_env,
+        logger=logger,
+        episodes=episodes,
         init_ep=init_epoch,
         nb_evaluations=config["evaluations"],
         eval_interval=config["eval_interval"],

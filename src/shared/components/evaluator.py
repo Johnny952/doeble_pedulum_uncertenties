@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 from ppo.components.uncert_agents import make_agent
-from ppo.components.trainer import adjust_range
+from shared.utils.adjust_range import adjust_range
 from shared.components.env import Env
 from shared.utils.utils import save_uncert, init_uncert_file
 

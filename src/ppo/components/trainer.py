@@ -6,10 +6,7 @@ from shared.components.evaluator import Evaluator
 from components.uncert_agents.base_agent import BaseAgent
 from shared.components.env import Env
 from shared.components.logger import Logger
-
-def adjust_range(action, action_range=[0, 1], target_range=[-1, 1]):
-    normalized_action = (action - action_range[0]) / (action_range[1] - action_range[0])
-    return normalized_action * (target_range[1] - target_range[0]) + target_range[0]
+from shared.utils.adjust_range import adjust_range
 
 class Trainer:
     def __init__(
@@ -99,12 +96,12 @@ class Trainer:
                     self._agent.save(i_ep, path=self.best_model_path)
                 break
 
-    def eval(self, episode_nb, mode='train'):
+    def eval(self, episode_nb, mode='eval'):
         assert mode in ['train', 'eval', 'test0', 'test']
         if self._evaluator:
             self._evaluator.eval(episode_nb, self._agent)
         # self._agent.eval_mode()
-        wandb_mode = 'Eval' if mode == 'train' else 'Test'
+        wandb_mode = mode.title()
         metrics = {
             f"{wandb_mode} Episode": self._eval_nb,
             f"{wandb_mode} Mean Score": 0,
@@ -114,7 +111,7 @@ class Trainer:
         }
         mean_uncert = np.array([0, 0], dtype=np.float64)
 
-        for i_val in tqdm(range(self._nb_evaluations), f'Evaluating ep {episode_nb}'):
+        for i_val in tqdm(range(self._nb_evaluations), f'{wandb_mode} ep {episode_nb}'):
 
             score = 0
             steps = 0

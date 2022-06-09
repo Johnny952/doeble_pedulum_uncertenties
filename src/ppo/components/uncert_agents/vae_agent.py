@@ -16,6 +16,8 @@ class VAEAgent(BaseAgent):
 
         self._nb_vae_update = 0
 
+        self._logger.watch(self._model.model)
+
     def chose_action(self, state: torch.Tensor):
         (alpha, beta), v = self._model.model(state)[:2]
         return (alpha, beta), v
